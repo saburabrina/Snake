@@ -1,7 +1,8 @@
 function iniciar_jogo(){
 	canvas.foodLength = 1;
 	canvas.snakeLength = 5;	
-	canvas.snakeStep = 2;	
+	canvas.snakePieces = [];
+	canvas.snakeStep = 2;
 	canvas.food();	
 	canvas.snake();	
 	canvas.movement();
@@ -18,36 +19,62 @@ var canvas = {
 	},	
 	snake: function(){		
 		this.snakeDirection = randomizeBool(); // #t: X	
-		var X = randomize(this.snakeDirection, this.snakeLength);		
-		var Y = randomize(1-this.snakeDirection, this.snakeLength);
+		this.snakeSense = -1 + (randomizeBool()*2); // #: left or up
+		var x = randomize(this.snakeDirection, this.snakeLength);		
+		var y = randomize(1-this.snakeDirection, this.snakeLength);
 
-		var width = this.snakeDirection ? this.snakeLength : 1;
-		var height = this.snakeDirection ? 1 : this.snakeLength;
-		
 		this.myCtx.fillStyle = "yellow";
-		this.myCtx.fillRect(X, Y, 5*width, 5*height);			
-		this.snakePosition = {x: X, y: Y};		
+
+		for(var i = 0; i < this.snakeLength*5; i+=5){			
+			this.myCtx.fillRect(x + i*this.snakeDirection, y + i*(1-this.snakeDirection), 5, 5);		
+			this.snakePieces.push({x: x + i*this.snakeDirection, y: y + i*(1-this.snakeDirection)});		
+		}	
 	},	
 	movement : function(){
-		return setInterval(()=>{
-			var X = this.snakePosition.x;
-			var Y = this.snakePosition.y;
+		setInterval(()=>{
+			for(var i = 0; i < this.snakeStep; i++){
+				var firstx = this.snakePieces[0].x;
+				var firsty = this.snakePieces[0].y;
 
-			var width = this.snakeDirection ? this.snakeLength : 1;
-			var height = this.snakeDirection ? 1 : this.snakeLength;
+				var lastx = this.snakePieces[this.snakePieces.length - 1].x;
+				var lasty = this.snakePieces[this.snakePieces.length - 1].y;
 
-			this.myCtx.clearRect(X, Y, 5*width, 5*height);
-			this.myCtx.fillRect(X - (this.snakeDirection)*5*this.snakeStep, Y - (1 - this.snakeDirection)*5*this.snakeStep, 5*width, 5*height);
+				this.snakePieces.unshift({x : firstx + this.snakeSense*5*this.snakeDirection, y: firsty + this.snakeSense*5*(1 - this.snakeDirection)});
+				this.myCtx.fillRect(firstx + this.snakeSense*5*this.snakeDirection, firsty + this.snakeSense*5*(1 - this.snakeDirection), 5, 5);
 
-			this.snakePosition = {x: X - (this.snakeDirection)*5*this.snakeStep, y: Y - (1 - this.snakeDirection)*5*this.snakeStep};
-
-			//if(this.snakePosition.x == 0 || this.snakePosition.y == 0)
-		},1000);
+				this.myCtx.clearRect(lastx, lasty, 5, 5);
+				this.snakePieces.pop();
+			}
+		},1000);	
 	}
 }
 
+function up(){
+	if (!canvas.snakeDirection) return;
+	canvas.snakeDirection = 0;
+	canvas.snakeSense = -1;
+}
+
+function down(){
+	if (!canvas.snakeDirection) return;
+	canvas.snakeDirection = 0;
+	canvas.snakeSense = 1;
+}
+
+function left(){
+	if (canvas.snakeDirection) return;
+	canvas.snakeDirection = 1;
+	canvas.snakeSense = -1;
+}
+
+function right(){
+	if (canvas.snakeDirection) return;
+	canvas.snakeDirection = 1;
+	canvas.snakeSense = 1;
+}
+
 function randomizeBool() {	
-	var choice = Math.random();
+	var choice = Math.random();	
 	choice = choice > 0.5 ? 1 : 0;	
 	return choice;
 }
