@@ -45,6 +45,7 @@ var canvas = {
 	},		
 	movement : function(){
 		this.interval = setInterval(()=>{
+
 			this.snakeDirection = this.cmdDirection;
 			this.snakeSense = this.cmdSense;
 
@@ -57,6 +58,8 @@ var canvas = {
 			var newx = firstx + this.snakeSense*this.gameStep*this.snakeDirection;
 			var newy = firsty + this.snakeSense*this.gameStep*(1 - this.snakeDirection);
 
+			if(findObj(this.foodPosition, firstx, firsty)) this.food();
+
 			if(!(lastx == this.foodPosition[0].x && lasty == this.foodPosition[0].y)){
 				clearRect(lastx, lasty, this.gameStep, this.gameStep);
 				this.snakePieces.pop();
@@ -66,15 +69,12 @@ var canvas = {
 			}
 
 			createRect(newx, newy, this.gameStep, this.gameStep, "yellow");
-
 			if(this.colapse(newx, newy)) {
 				clearInterval(this.interval);
 				return;
 			}
-
 			this.snakePieces.unshift({x : newx, y: newy});
 
-			if(firstx == this.foodPosition[0].x && firsty == this.foodPosition[0].y) this.food();
 		},this.snakeSpeed);
 	},	
 	colapse : function(x, y){
