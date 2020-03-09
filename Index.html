@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html>
-	<head>	
-		<title>Snake</title>	
+	<head>
+		<title>Snake</title>
 		<link rel="stylesheet" type="text/css" href="Index.css">
-	</head>	
+	</head>
 	<body onload="iniciar_jogo()">
 		<div>
-			<button type="button" onclick="up()">UP</button>
-			<button type="button" onclick="left()">LEFT</button>
-			<button type="button" onclick="right()">RIGHT</button>
-			<button type="button" onclick="down()">DOWN</button>
+			<button type="button" onclick="canvas.up()">UP</button>
+			<button type="button" onclick="canvas.left()">LEFT</button>
+			<button type="button" onclick="canvas.right()">RIGHT</button>
+			<button type="button" onclick="canvas.down()">DOWN</button> |
+			<button id="pauseBtn" type="button" onclick="canvas.pause()">PAUSE</button>
+			<button id="playBtn" type="button" onclick="canvas.play()">PLAY</button>
+			<button type="button" onclick="canvas.restart()">RESTART</button>
 		</div>
 		<canvas id="campo" height="400" width="400"></canvas>
-	</body>	
+	</body>
 	<script type="text/javascript" src="Index.js"></script>
 </html>

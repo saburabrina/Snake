@@ -1,120 +1,156 @@
 function iniciar_jogo(){
+	canvas.gameStep = 10; // em pixels
 	canvas.foodLength = 1;
 	canvas.foodPosition = [];
-	canvas.snakeLength = 5;	
+	canvas.snakeLength = 5;
 	canvas.snakePieces = [];
-	canvas.snakeStep = 1;
-	canvas.food();	
-	canvas.snake();	
+	canvas.snakeSpeed = 500;
+	canvas.playBtn.disabled = true;
+	canvas.food();
+	canvas.snake();
 	canvas.movement();
-
 	window.addEventListener("keydown", checkKeyPress, false);
 }
 
-var canvas = {	
-	myself : document.getElementById('campo'),	
-	myCtx : document.getElementById('campo').getContext('2d'),	
-	food : function (){		
-		var x = randomize(0, this.foodLength);		
+var canvas = {
+	myself : document.getElementById('campo'),
+	myCtx : document.getElementById('campo').getContext('2d'),		
+	food : function (){
+		var x = randomize(0, this.foodLength);
 		var y = randomize(0, this.foodLength);
 
-		createRect(x, y, 5, 5, "white");
-		this.foodPosition.push({x: x, y: y});	
-	},	
-	snake: function(){		
-		this.snakeDirection = randomizeBool(); // #t: X	
-		this.snakeSense = -1 + (randomizeBool()*2); // #: left or up
+		if(checkAvailablePosition(x,y,this.snakePieces)){
+			createRect(x, y, this.gameStep, this.gameStep, "white");
+			this.foodPosition.push({x: x, y: y});
+		}
+		else this.food();
+	},
+	snake: function(){
+		this.snakeDirection = randomizeBool(); // #t: X
+		this.snakeSense = -1 + (randomizeBool()*2); // #-1: left or up
 		this.cmdDirection = this.snakeDirection;
 		this.cmdSense = this.snakeSense;
 
-		var x = randomize(this.snakeDirection, this.snakeLength);		
+		var x = randomize(this.snakeDirection, this.snakeLength);
 		var y = randomize(1-this.snakeDirection, this.snakeLength);
 
-		for(var i = 0; i < this.snakeLength*5; i+=5){			
-			createRect(x + i*this.snakeDirection, y + i*(1-this.snakeDirection), 5, 5, "yellow");		
-			this.snakePieces.push({x: x + i*this.snakeDirection, y: y + i*(1-this.snakeDirection)});		
-		}	
-	},	
+		if(checkAvailablePosition(x,y,this.foodPosition)){
+			for(var i = 0; i < this.snakeLength*this.gameStep; i+=this.gameStep){
+				createRect(x + i*this.snakeDirection, y + i*(1-this.snakeDirection), this.gameStep, this.gameStep, "yellow");
+				this.snakePieces.push({x: x + i*this.snakeDirection, y: y + i*(1-this.snakeDirection)});
+			}
+			if(this.snakeSense > 0) this.snakePieces = this.snakePieces.reverse();
+		}
+		else this.snake();
+	},		
 	movement : function(){
-		setInterval(()=>{
+		this.interval = setInterval(()=>{
 			this.snakeDirection = this.cmdDirection;
 			this.snakeSense = this.cmdSense;
-			for(var i = 0; i < this.snakeStep; i++){
-				var firstx = this.snakePieces[0].x;
-				var firsty = this.snakePieces[0].y;
 
-				var lastx = this.snakePieces[this.snakePieces.length - 1].x;
-				var lasty = this.snakePieces[this.snakePieces.length - 1].y;
+			var firstx = this.snakePieces[0].x;
+			var firsty = this.snakePieces[0].y;
 
-				createRect(firstx + this.snakeSense*5*this.snakeDirection, firsty + this.snakeSense*5*(1 - this.snakeDirection), 5, 5, "yellow");
-				this.snakePieces.unshift({x : firstx + this.snakeSense*5*this.snakeDirection, y: firsty + this.snakeSense*5*(1 - this.snakeDirection)});
+			var lastx = this.snakePieces[this.snakePieces.length - 1].x;
+			var lasty = this.snakePieces[this.snakePieces.length - 1].y;
 
-				clearRect(lastx, lasty, 5, 5);
+			var newx = firstx + this.snakeSense*this.gameStep*this.snakeDirection;
+			var newy = firsty + this.snakeSense*this.gameStep*(1 - this.snakeDirection);
+
+			if(!(lastx == this.foodPosition[0].x && lasty == this.foodPosition[0].y)){
+				clearRect(lastx, lasty, this.gameStep, this.gameStep);
 				this.snakePieces.pop();
 			}
+			else {
+				this.foodPosition.shift();
+			}
+
+			createRect(newx, newy, this.gameStep, this.gameStep, "yellow");
+
+			if(this.colapse(newx, newy)) {
+				clearInterval(this.interval);
+				return;
+			}
+
+			this.snakePieces.unshift({x : newx, y: newy});
+
 			if(firstx == this.foodPosition[0].x && firsty == this.foodPosition[0].y) this.food();
-			//else if(lastx == this.foodPosition[0].x && lasty == this.foodPosition[0].y){
-			//	createRect(lastx + this.snakeSense*5*this.snakeDirection, lasty + this.snakeSense*5*(1 - this.snakeDirection), 5, 5, "yellow");
-			//	this.foodPosition.shift();
-			//}
-		},1000);	
+		},this.snakeSpeed);
+	},	
+	colapse : function(x, y){
+		if(x == 0 || y == 0) return true;
+		if(x == 400 || y == 400) return true;
+		if(findObj(this.snakePieces, x, y)) return true;
+		return false;
+	},
+	up: function(){
+		if (!this.snakeDirection) return;
+		this.cmdDirection = 0;
+		this.cmdSense = -1;
+	},	
+	down : function(){
+		if (!this.snakeDirection) return;
+		this.cmdDirection = 0;	
+		this.cmdSense = 1;
+	},
+	left : function(){
+		if (this.snakeDirection) return;
+		this.cmdDirection = 1;	
+		this.cmdSense = -1;
+	},
+	right : function(){
+		if (this.snakeDirection) return;
+		this.cmdDirection = 1;
+		this.cmdSense = 1;
+	},
+	pauseBtn : document.getElementById("pauseBtn"),
+	playBtn : document.getElementById("playBtn"),
+	pause : function(){
+		clearInterval(this.interval);	
+		pauseBtn.disabled = true;
+		playBtn.disabled = false;
+	},
+	play : function(){
+		this.movement();
+		pauseBtn.disabled = false;
+		playBtn.disabled = true;
+	},
+	restart : function(){
+		clearRect(0, 0, 400, 400);
+		clearInterval(this.interval);
+		iniciar_jogo();
 	}
 }
 
-function up(){
-	if (!canvas.snakeDirection) return;
-	canvas.cmdDirection = 0;
-	canvas.cmdSense = -1;
-}
-
-function down(){
-	if (!canvas.snakeDirection) return;
-	canvas.cmdDirection = 0;
-	canvas.cmdSense = 1;
-}
-
-function left(){
-	if (canvas.snakeDirection) return;
-	canvas.cmdDirection = 1;
-	canvas.cmdSense = -1;
-}
-
-function right(){
-	if (canvas.snakeDirection) return;
-	canvas.cmdDirection = 1;
-	canvas.cmdSense = 1;
-}
-
-function randomizeBool() {	
-	var choice = Math.random();	
-	choice = choice > 0.5 ? 1 : 0;	
+function randomizeBool() {
+	var choice = Math.random();
+	choice = choice > 0.5 ? 1 : 0;
 	return choice;
 }
 
-function randomize(bool, bound) {	
-	var limite = 400;	
-	limite -= bool? bound*5 : 5;
-	var num = Math.floor(Math.random() * limite); // aleatorizar múltiplo de cinco	
-
-	if(num%5 < 3) return num - num%5;	
-	return num + (5 - num%5);
+function randomize(bool, bound) {
+	var limite = 400;
+	limite -= bool? bound*canvas.gameStep : canvas.gameStep;
+	var num = Math.floor(Math.random() * limite); // aleatorizar múltiplo de canvas.gameStep
+	if(num%canvas.gameStep < (canvas.gameStep/2)) return num - num%canvas.gameStep;
+	return num + (canvas.gameStep - num%canvas.gameStep);
 }
 
 function checkKeyPress(e){
 	switch(e.keyCode) {
-		case 37 : 
-			left();
+		case 37 :
+			canvas.left();
 			break;
-		case 38 : 
-			up();
+		case 38 :
+			canvas.up();
 			break;
-		case 39 : 
-			right();
+		case 39 :
+			canvas.right();
 			break;
-		case 40 : 
-			down();
+		case 40 :	
+			canvas.down();
 			break;
-		default: 
+		default:
 			break;
 	}
 }
@@ -122,9 +158,20 @@ function checkKeyPress(e){
 function createRect(x, y, width, length, color){
 	canvas.myCtx.fillStyle = color;
 	canvas.myCtx.fillRect(x, y, width, length);
-
 }
 
 function clearRect(x, y, width, length){
 	canvas.myCtx.clearRect(x, y, width, length);
+}
+
+function findObj(arr, X, Y){
+	return arr.find((elem)=>{
+		return elem.x == X && elem.y == Y;
+	}) == null ? false : true;
+}
+
+function checkAvailablePosition(x, y, arr){
+	if(arr.length == 0) return true;
+	if(findObj(arr, x, y)) return false;
+	return true;
 }
