@@ -4,8 +4,7 @@ function iniciar_jogo(){
 	canvas.foodPosition = [];
 	canvas.snakeLength = 5;
 	canvas.snakePieces = [];
-	canvas.snakeSpeed = 500;
-	canvas.snakeSpeedInput.value = 	canvas.snakeSpeed/1000;
+	canvas.snakeSpeed = canvas.snakeSpeedInput.value*1000;
 	canvas.snakeSpeedInput.disabled = true;
 	canvas.playBtn.disabled = true;
 	canvas.msg.innerHTML = "GOOD LUCK";
@@ -62,6 +61,17 @@ var canvas = {
 			var newx = firstx + this.snakeSense*this.gameStep*this.snakeDirection;
 			var newy = firsty + this.snakeSense*this.gameStep*(1 - this.snakeDirection);
 
+			if(this.colapse(newx, newy) || 
+			(this.snakeSense == 1 && 
+			this.colapse(newx+this.gameStep*this.snakeDirection, newy+this.gameStep*(1 - this.snakeDirection)))) {
+				this.pauseBtn.disabled = true;
+				this.playBtn.disabled = true;
+				clearInterval(this.interval);
+				this.msg.innerHTML = "You Lost..."
+				this.snakeSpeedInput.disabled = false;
+				return;
+			}
+
 			if(findObj(this.foodPosition, firstx, firsty)) this.food();
 		
 			if(!(lastx == this.foodPosition[0].x && lasty == this.foodPosition[0].y)){
@@ -72,22 +82,13 @@ var canvas = {
 				this.foodPosition.shift();
 			}
 			createRect(newx, newy, this.gameStep, this.gameStep, "yellow");
-
-			if(this.colapse(newx, newy) || 
-			(this.snakeSense == 1 && 
-			this.colapse(newx+this.gameStep*this.snakeDirection, newy+this.gameStep*(1 - this.snakeDirection)))) {
-				clearInterval(this.interval);
-				this.msg.innerHTML = "You Lost..."
-				this.snakeSpeedInput.disabled = false;
-				return;
-			}
 			this.snakePieces.unshift({x : newx, y: newy});
 		},this.snakeSpeed);
 	},
 	colapse : function(x, y){
-		if(x <= 0 || y <= 0) return true;
-		if(x >= 400 || y >= 400) return true;
-		if(findObj(this.snakePieces, x, y)) return true;
+		if(x < 0 || y < 0) return true;
+		if(x > 400 || y > 400) return true;
+		if(findObj(this.snakePieces.slice(1), x, y)) return true;
 
 		return false;
 	},
@@ -128,6 +129,8 @@ var canvas = {
 		this.snakeSpeedInput.disabled = true;
 	},
 	restart : function(){
+		this.pauseBtn.disabled = false;
+		this.playBtn.disabled = true;
 		clearRect(0, 0, 400, 400);
 		clearInterval(this.interval);
 		iniciar_jogo();
