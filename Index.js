@@ -5,16 +5,20 @@ function iniciar_jogo(){
 	canvas.snakeLength = 5;
 	canvas.snakePieces = [];
 	canvas.snakeSpeed = 500;
+	canvas.snakeSpeedInput.value = 	canvas.snakeSpeed/1000;
+	canvas.snakeSpeedInput.disabled = true;
 	canvas.playBtn.disabled = true;
+	canvas.msg.innerHTML = "GOOD LUCK";
 	canvas.food();
 	canvas.snake();
 	canvas.movement();
+
 	window.addEventListener("keydown", checkKeyPress, false);
 }
-
+	
 var canvas = {
 	myself : document.getElementById('campo'),
-	myCtx : document.getElementById('campo').getContext('2d'),		
+	myCtx : document.getElementById('campo').getContext('2d'),
 	food : function (){
 		var x = randomize(0, this.foodLength);
 		var y = randomize(0, this.foodLength);
@@ -39,13 +43,13 @@ var canvas = {
 				createRect(x + i*this.snakeDirection, y + i*(1-this.snakeDirection), this.gameStep, this.gameStep, "yellow");
 				this.snakePieces.push({x: x + i*this.snakeDirection, y: y + i*(1-this.snakeDirection)});
 			}
+
 			if(this.snakeSense > 0) this.snakePieces = this.snakePieces.reverse();
 		}
 		else this.snake();
-	},		
+	},
 	movement : function(){
 		this.interval = setInterval(()=>{
-
 			this.snakeDirection = this.cmdDirection;
 			this.snakeSense = this.cmdSense;
 
@@ -59,7 +63,7 @@ var canvas = {
 			var newy = firsty + this.snakeSense*this.gameStep*(1 - this.snakeDirection);
 
 			if(findObj(this.foodPosition, firstx, firsty)) this.food();
-
+		
 			if(!(lastx == this.foodPosition[0].x && lasty == this.foodPosition[0].y)){
 				clearRect(lastx, lasty, this.gameStep, this.gameStep);
 				this.snakePieces.pop();
@@ -67,35 +71,39 @@ var canvas = {
 			else {
 				this.foodPosition.shift();
 			}
-
 			createRect(newx, newy, this.gameStep, this.gameStep, "yellow");
-			if(this.colapse(newx, newy)) {
+
+			if(this.colapse(newx, newy) || 
+			(this.snakeSense == 1 && 
+			this.colapse(newx+this.gameStep*this.snakeDirection, newy+this.gameStep*(1 - this.snakeDirection)))) {
 				clearInterval(this.interval);
+				this.msg.innerHTML = "You Lost..."
+				this.snakeSpeedInput.disabled = false;
 				return;
 			}
 			this.snakePieces.unshift({x : newx, y: newy});
-
 		},this.snakeSpeed);
-	},	
+	},
 	colapse : function(x, y){
-		if(x == 0 || y == 0) return true;
-		if(x == 400 || y == 400) return true;
+		if(x <= 0 || y <= 0) return true;
+		if(x >= 400 || y >= 400) return true;
 		if(findObj(this.snakePieces, x, y)) return true;
+
 		return false;
 	},
 	up: function(){
 		if (!this.snakeDirection) return;
 		this.cmdDirection = 0;
 		this.cmdSense = -1;
-	},	
+	},
 	down : function(){
 		if (!this.snakeDirection) return;
-		this.cmdDirection = 0;	
+		this.cmdDirection = 0;
 		this.cmdSense = 1;
 	},
 	left : function(){
 		if (this.snakeDirection) return;
-		this.cmdDirection = 1;	
+		this.cmdDirection = 1;
 		this.cmdSense = -1;
 	},
 	right : function(){
@@ -105,20 +113,27 @@ var canvas = {
 	},
 	pauseBtn : document.getElementById("pauseBtn"),
 	playBtn : document.getElementById("playBtn"),
+	snakeSpeedInput : document.getElementById('snakeSpeed'),
+	msg : document.getElementById('msg'),
 	pause : function(){
-		clearInterval(this.interval);	
-		pauseBtn.disabled = true;
-		playBtn.disabled = false;
+		clearInterval(this.interval);
+		this.pauseBtn.disabled = true;
+		this.playBtn.disabled = false;
+		this.snakeSpeedInput.disabled = false;
 	},
 	play : function(){
 		this.movement();
-		pauseBtn.disabled = false;
-		playBtn.disabled = true;
+		this.pauseBtn.disabled = false;
+		this.playBtn.disabled = true;
+		this.snakeSpeedInput.disabled = true;
 	},
 	restart : function(){
 		clearRect(0, 0, 400, 400);
 		clearInterval(this.interval);
 		iniciar_jogo();
+	},
+	changeSpeed : function(){
+		this.snakeSpeed = 1000*this.snakeSpeedInput.value;
 	}
 }
 
@@ -132,6 +147,7 @@ function randomize(bool, bound) {
 	var limite = 400;
 	limite -= bool? bound*canvas.gameStep : canvas.gameStep;
 	var num = Math.floor(Math.random() * limite); // aleatorizar múltiplo de canvas.gameStep
+
 	if(num%canvas.gameStep < (canvas.gameStep/2)) return num - num%canvas.gameStep;
 	return num + (canvas.gameStep - num%canvas.gameStep);
 }
@@ -147,7 +163,7 @@ function checkKeyPress(e){
 		case 39 :
 			canvas.right();
 			break;
-		case 40 :	
+		case 40 :
 			canvas.down();
 			break;
 		default:

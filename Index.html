@@ -5,16 +5,26 @@
 		<link rel="stylesheet" type="text/css" href="Index.css">
 	</head>
 	<body onload="iniciar_jogo()">
-		<div>
-			<button type="button" onclick="canvas.up()">UP</button>
-			<button type="button" onclick="canvas.left()">LEFT</button>
-			<button type="button" onclick="canvas.right()">RIGHT</button>
-			<button type="button" onclick="canvas.down()">DOWN</button> |
-			<button id="pauseBtn" type="button" onclick="canvas.pause()">PAUSE</button>
-			<button id="playBtn" type="button" onclick="canvas.play()">PLAY</button>
-			<button type="button" onclick="canvas.restart()">RESTART</button>
+		<div style="float: left;">
+			<div>
+				<button type="button" onclick="canvas.up()">UP</button>
+				<button type="button" onclick="canvas.left()">LEFT</button>
+				<button type="button" onclick="canvas.right()">RIGHT</button>
+				<button type="button" onclick="canvas.down()">DOWN</button> |
+				<button id="pauseBtn" type="button" onclick="canvas.pause()">PAUSE</button>
+				<button id="playBtn" type="button" onclick="canvas.play()">PLAY</button>
+				<button type="button" onclick="canvas.restart()">RESTART</button>
+			</div>
+
+			<canvas id="campo" height="400" width="400"></canvas>
 		</div>
-		<canvas id="campo" height="400" width="400"></canvas>
+
+		<div id="blockInfo">
+			<strong><label for="snakeSpeed">Snake Speed: </label></strong> 1 movement each
+			<input type="text" id="snakeSpeed" name="snakeSpeed" onchange="canvas.changeSpeed()"> seconds
+
+			<h1 id="msg"></h1>
+		</div>
 	</body>
 	<script type="text/javascript" src="Index.js"></script>
 </html>

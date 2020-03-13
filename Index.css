@@ -1,4 +1,13 @@
-#campo {	
-	border:1px solid #000000;	
+#campo {
+	border:1px solid #000000;
 	background-color: black;
+	margin: 1px;
+}
+#blockInfo {
+	display: inline-block
+}
+@media (min-width: 875px) {
+	#blockInfo {
+		margin-top: 200px;
+	}
 }
