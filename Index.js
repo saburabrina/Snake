@@ -2,7 +2,7 @@ function iniciar_jogo(){
 	canvas.gameStep = 10; // em pixels
 	canvas.foodLength = 1;
 	canvas.foodPosition = [];
-	canvas.snakeLength = 5;
+	canvas.snakeLength = 6;
 	canvas.snakePieces = [];
 	canvas.snakeSpeed = canvas.snakeSpeedInput.value*1000;
 	canvas.snakeSpeedInput.disabled = true;
@@ -61,9 +61,7 @@ var canvas = {
 			var newx = firstx + this.snakeSense*this.gameStep*this.snakeDirection;
 			var newy = firsty + this.snakeSense*this.gameStep*(1 - this.snakeDirection);
 
-			if(this.colapse(newx, newy) || 
-			(this.snakeSense == 1 && 
-			this.colapse(newx+this.gameStep*this.snakeDirection, newy+this.gameStep*(1 - this.snakeDirection)))) {
+			if(this.colapse(newx, newy)) {
 				this.pauseBtn.disabled = true;
 				this.playBtn.disabled = true;
 				clearInterval(this.interval);
@@ -87,7 +85,7 @@ var canvas = {
 	},
 	colapse : function(x, y){
 		if(x < 0 || y < 0) return true;
-		if(x > 400 || y > 400) return true;
+		if(x >= 400 || y >= 400) return true;
 		if(findObj(this.snakePieces.slice(1), x, y)) return true;
 
 		return false;
